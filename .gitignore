@@ -90,3 +90,8 @@ ENV/
 
 # Vim swp files:
 *.swp
+
+#other things:
+p1.txt
+p2.txt
+

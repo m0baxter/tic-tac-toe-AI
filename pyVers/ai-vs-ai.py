@@ -53,6 +53,7 @@ def playRound():
       #cat's game:
       elif ( not brd.movesLeft() ):
          return (p1Moves, p2Moves, np.array([0,0,1]))
+         #return ("", "", np.array([0,0,1]))
 
       p2Moves += takeTurn("O", brd) + "\n"
 
@@ -82,7 +83,7 @@ def runGames( n ):
 
 if __name__ == "__main__":
 
-   record = runGames(10000)
+   record = runGames(100)
 
    print "X: {0}, O: {1}, Tie: {2}".format(record[0], record[1], record[2])
 
