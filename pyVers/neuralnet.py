@@ -1,5 +1,6 @@
 
 import numpy as np
+import scipy.io as sio
 from scipy.optimize import minimize
 
 
@@ -10,6 +11,28 @@ class NeuralNet(object):
         self.shape = [inputs] + list(hiddens) + [outputs]
         self.layers = len(self.shape)
         self.weights = self.__randInitialize()
+
+    def toFile(self, fileName):
+        """Saves the NeuralNet to filename.mat."""
+
+        nnDict = dict( shape = self.shape, weights=self.weights)
+        sio.savemat(fileName, nnDict, True)
+
+        return
+
+    @classmethod
+    def fromFile(cls, path):
+        """Creates a NeuralNet from a file."""
+
+        cls = NeuralNet(1,1,1)
+
+        data = sio.loadmat(path)
+
+        cls.shape = list(data['shape'][0])
+        cls.layers = len(cls.shape)
+        cls.weights = list(data['weights'][0])
+
+        return cls
 
     def numLabels(self):
         """Returns the number labels in the output of the network."""
@@ -77,7 +100,6 @@ class NeuralNet(object):
         cost = -np.sum( np.log(A3)*Y + np.log(1 - A3 + 1.0e-15)*(1 - Y))/m + reg
 
         return cost
-
 
     def __nnCost(self, theta, X, Y, l):
         """Computes the cost and its gradient for the neural network on data X, Y
@@ -215,7 +237,7 @@ def readin( path, DT = float ):
     return (X, y)
 
 
-if __name__ == "__main__":
+if __name__ == "__main_":
 
     import time
 
