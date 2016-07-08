@@ -34,35 +34,32 @@ class HumanPlayer(TicTacToeAI):
 
 class NNAI(TicTacToeAI):
     
-    def __init__(self, path):
+    def __init__(self, neuralnet):
         """Initializes an AI from a set of example moves."""
 
-        self.neuralnet = nn.NeuralNEt(9, 9, 8)
-
-        X, y = readin(path, int)
-        self.neuralnet.trainNetwork(X, y, 0.1)
+        self.neuralnet = neuralnet
         
     def takeTurn(self, board):
         """Takes one turn."""
-        
-        brdVect = np.array([board.intList()])
-        rankedMvs = self.neuralnet.evaluate(brdVect)
 
-        for mv in rankedMvs:
-            if ( board.isBlank(mv) ):
-                return mv
+        emptyBoard = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
 
-        raise RuntimeError("Could not make a move, the board was full.")
+        brdList = board.intList()
+
+        if (brdList == emptyBoard):
+            return rnd.randrange(0,9)
+
+        else:
+            rankedMvs = self.neuralnet.evaluate( np.array([brdList]) )
+
+#            print rankedMvs
+            
+            for mv in rankedMvs:
+#                print board.isBlank(mv),
+                if ( board.isBlank(mv) ):
+                    return mv
+
+            raise RuntimeError("Could not make a move, the board was full.")
 
 
-def readin( path, DT = float ):
-    
-    data = np.loadtxt( path, delimiter = " ", dtype=DT)
-
-    X = data[:, 0:9]
-    m,n = X.shape
-    print m,n
-    y = data[:,9].reshape((m,1))
-
-    return (X, y)
 

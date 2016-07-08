@@ -164,7 +164,7 @@ class NeuralNet(object):
         z3 = a2.dot(self.weights[1].T)
         a3 = sigmoid(z3)
 
-        print a3
+        #print a3
 
         return self.__indexDecending(a3)
     
@@ -222,8 +222,6 @@ def numGrad(f, x):
         perturb[p] = 0.0
 
     return numgrad
-
-
 
 
 def readin( path, DT = float ):
