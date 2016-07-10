@@ -5,6 +5,7 @@ import tttAI as ai
 import neuralnet as nn
 import numpy as np
 import time
+import threading
 
 
 emptyBoard = "0 0 0 0 0 0 0 0 0 "
@@ -89,7 +90,7 @@ def initializeLearning():
     p1AI = ai.RandomAI()
     p2AI = ai.RandomAI()
 
-    p1Moves, p2Moves, record = playGames( p1AI, p2AI, 1000)
+    p1Moves, p2Moves, record = playGames( p1AI, p2AI, 12000)
 
     p1File.write(p1Moves)
     p2File.write(p2Moves)
@@ -109,7 +110,7 @@ def learnTicTacToe(pNum, maxItr):
 
     logFile = open( playerStr + ".log", 'w')
 
-    nnPlayer = nn.NeuralNet(9, 9, 8)
+    nnPlayer = nn.NeuralNet(9, 9, 16)
 
     itr = 1
     start = time.time()
@@ -120,23 +121,23 @@ def learnTicTacToe(pNum, maxItr):
 
         #Train network
         t1 = time.time()
-        nnPlayer.trainNetwork(X, y, 0.0)
+        nnPlayer.trainNetwork(X, y, 0.1)
         t2 = time.time()
 
-        logFile.write( "Iteration: {0}  Trainging Time: {1}\n".format( itr, t2 - t1 ) )
+        logFile.write( "Lesson: {0}  Training Time: {1}\n".format( itr, t2 - t1 ) )
 
         if (pNum == 1):
             p1AI = ai.NNAI(nnPlayer)
             p2AI = ai.RandomAI()
 
-        elif (PNum == 2):
+        elif (pNum == 2):
             p1AI = ai.RandomAI()
             p2AI = ai.NNAI(nnPlayer)
 
         else:
             raise ValueError("pNum makes no sense")
         
-        results = playGames( p1AI, p2AI, 1000)
+        results = playGames( p1AI, p2AI, 12000)
 
         #Save win/tie moves to disk:
         mvsFile = open(path, 'w')
@@ -146,12 +147,12 @@ def learnTicTacToe(pNum, maxItr):
         logFile.write( "X: {0}, O: {1}, Tie: {2}\n\n".format( results[2][0],
                                                               results[2][1],
                                                               results[2][2]) )
-
+        print pNum, itr
         itr += 1
 
     end = time.time()
 
-    logFile.write( "\nRan {0} of {1} iterations  Training Time: {1}".format( itr, maxItr, end - start ) )
+    logFile.write( "\nRan {0} of {1} iterations  Training Time: {2}".format( itr, maxItr, end - start ) )
 
     #Save neural nework to file:
     nnPlayer.toFile(playerStr)
@@ -173,5 +174,13 @@ def readin( path, DT = float ):
 if __name__ == "__main__":
 
     initializeLearning()
-    learnTicTacToe(1, 6)
+
+    t1 = threading.Thread( target = learnTicTacToe, args = (1, 5) )
+    t2 = threading.Thread( target = learnTicTacToe, args = (2, 5) )
+
+    t1.start()
+    t2.start()
+
+    t1.join()
+    t2.join()
 
