@@ -1,14 +1,15 @@
 
-
 from board import *
 import tttAI as ai
 import neuralnet as nn
 import numpy as np
 import time
 import threading
+import sys
 
 
 emptyBoard = "0 0 0 0 0 0 0 0 0 "
+nGames = None
 
 def takeTurn( mrk, brd, ai ):
    """Ask player mrk for square to place their marker."""
@@ -90,7 +91,7 @@ def initializeLearning():
     p1AI = ai.RandomAI()
     p2AI = ai.RandomAI()
 
-    p1Moves, p2Moves, record = playGames( p1AI, p2AI, 12000)
+    p1Moves, p2Moves, record = playGames( p1AI, p2AI, nGames)
 
     p1File.write(p1Moves)
     p2File.write(p2Moves)
@@ -110,7 +111,7 @@ def learnTicTacToe(pNum, maxItr):
 
     logFile = open( playerStr + ".log", 'w')
 
-    nnPlayer = nn.NeuralNet(9, 9, 16)
+    nnPlayer = nn.NeuralNet(9, 9, 12)
 
     itr = 1
     start = time.time()
@@ -137,7 +138,7 @@ def learnTicTacToe(pNum, maxItr):
         else:
             raise ValueError("pNum makes no sense")
         
-        results = playGames( p1AI, p2AI, 12000)
+        results = playGames( p1AI, p2AI, nGames)
 
         #Save win/tie moves to disk:
         mvsFile = open(path, 'w')
@@ -173,10 +174,17 @@ def readin( path, DT = float ):
 
 if __name__ == "__main__":
 
+    try:
+        nGames = int(sys.argv[1])
+
+    except ValueError:
+        print "Invalid nGames, setting nGames to 7000:"
+        nGames = 7000
+
     initializeLearning()
 
-    t1 = threading.Thread( target = learnTicTacToe, args = (1, 5) )
-    t2 = threading.Thread( target = learnTicTacToe, args = (2, 5) )
+    t1 = threading.Thread( target = learnTicTacToe, args = (1, 20) )
+    t2 = threading.Thread( target = learnTicTacToe, args = (2, 20) )
 
     t1.start()
     t2.start()
