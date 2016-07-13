@@ -3,6 +3,7 @@ import numpy as np
 import scipy.io as sio
 from scipy.optimize import minimize
 
+#np.set_printoptions(threshold=np.inf)
 
 class NeuralNet(object):
 
@@ -84,22 +85,48 @@ class NeuralNet(object):
         return Y
 
     def cost(self, theta, X, Y, l):
+#        m, n = X.shape
+#
+#        Ws = self.__unflatten(theta)
+#
+#        A1 = np.append( np.ones((m,1)), X, 1)
+#        Z2 = A1.dot(Ws[0].T)
+#        mz, nz = Z2.shape
+#        A2 = np.append( np.ones((mz,1)), sigmoid(Z2), 1)
+#        Z3 = A2.dot(Ws[1].T)
+#        A3 = sigmoid(Z3)
+#
+#        #compute cost:
+#        reg = l*np.sum( [ np.sum( w[:,1:]**2 ) for w in Ws ] )/(2.0 * m)
+#        cost = -np.sum( np.log(A3)*Y + np.log(1 - A3 + 1.0e-15)*(1 - Y))/m + reg
+#
+#        return cost
         m, n = X.shape
 
         Ws = self.__unflatten(theta)
+        Grads = [ np.zeros(w.shape) for w in Ws ]
+        As = [ np.append( np.ones((m,1)), X, 1) ]
+        Zs = []
 
-        A1 = np.append( np.ones((m,1)), X, 1)
-        Z2 = A1.dot(Ws[0].T)
-        mz, nz = Z2.shape
-        A2 = np.append( np.ones((mz,1)), sigmoid(Z2), 1)
-        Z3 = A2.dot(Ws[1].T)
-        A3 = sigmoid(Z3)
+        for l in xrange(self.layers - 2):
+            #compute Z:
+            z = As[l].dot(Ws[l].T)
+            Zs.append(z)
+            
+            #Compute activation (A):
+            mz, nz = z.shape
+            a = np.append( np.ones((mz,1)), sigmoid(z), 1)
+            As.append(a)
+
+        #activation of output:
+        Zs.append( As[-1].dot(Ws[-1].T) )
+        As.append( sigmoid(Zs[-1]) )
 
         #compute cost:
         reg = l*np.sum( [ np.sum( w[:,1:]**2 ) for w in Ws ] )/(2.0 * m)
-        cost = -np.sum( np.log(A3)*Y + np.log(1 - A3 + 1.0e-15)*(1 - Y))/m + reg
+        cost = -np.sum( np.log(As[-1])*Y + np.log(1 - As[-1] + 1.0e-15)*(1 - Y))/m + reg
 
-        return cost
+        return np.asscalar(cost)
 
     def __nnCost(self, theta, X, Y, l):
         """Computes the cost and its gradient for the neural network on data X, Y
@@ -108,38 +135,53 @@ class NeuralNet(object):
         m, n = X.shape
 
         Ws = self.__unflatten(theta)
+        Grads = [ np.zeros(w.shape) for w in Ws ]
+        As = [ np.append( np.ones((m,1)), X, 1) ]
+        Zs = []
 
-        A1 = np.append( np.ones((m,1)), X, 1)
-        Z2 = A1.dot(Ws[0].T)
-        mz, nz = Z2.shape
-        A2 = np.append( np.ones((mz,1)), sigmoid(Z2), 1)
-        Z3 = A2.dot(Ws[1].T)
-        A3 = sigmoid(Z3)
+        for l in xrange(self.layers - 2):
+            #compute Z:
+            z = As[l].dot(Ws[l].T)
+            Zs.append(z)
+            
+            #Compute activation (A):
+            mz, nz = z.shape
+            a = np.append( np.ones((mz,1)), sigmoid(z), 1)
+            As.append(a)
+
+        #activation of output:
+        Zs.append( As[-1].dot(Ws[-1].T) )
+        As.append( sigmoid(Zs[-1]) )
 
         #compute cost:
         reg = l*np.sum( [ np.sum( w[:,1:]**2 ) for w in Ws ] )/(2.0 * m)
-        cost = -np.sum( np.log(A3)*Y + np.log(1 - A3 + 1.0e-15)*(1 - Y))/m + reg
+        cost = -np.sum( np.log(As[-1])*Y + np.log(1 - As[-1] + 1.0e-15)*(1 - Y))/m + reg
 
         #gradient:
-        D3 = A3 - Y
-        D2 = ( D3.dot(Ws[1]) * np.append(np.ones((m,1)), sigGrad(Z2), 1) )[:,1:]
+        d = As[-1] - Y
+        Delta = d.T.dot(As[-2])
+        mw, _ = Ws[-1].shape
+        Grads[-1] =  ( Delta + l*np.append(np.zeros((mw,1)), Ws[-1][:,1:], 1) )/m
 
-        Delta2 = D3.T.dot(A2)
-        Delta1 = D2.T.dot(A1)
+        for i in xrange(2, self.layers):
+            z = sigGrad(Zs[-i])
+            mz, _ = z.shape
 
-        mw1, _ = Ws[0].shape
-        mw2, _ = Ws[1].shape
+            d = ( d.dot(Ws[-i+1]) * np.append(np.ones((mz,1)), z, 1) )[:,1:]
+            Delta = d.T.dot(As[-i - 1])
 
-        grad1 =  ( Delta1 + l*np.append(np.zeros((mw1,1)), Ws[0][:,1:], 1) )/m
-        grad2 =  ( Delta2 + l*np.append(np.zeros((mw2,1)), Ws[1][:,1:], 1) )/m
+            mw, _ = Ws[-i].shape
 
-#        GRAD = np.append(grad1.flatten(), grad2.flatten())
-#        f = lambda x : self.cost(x, X,Y,l)
-#        NGRAD = numGrad(f,theta)
-#
-#        print np.linalg.norm(GRAD - NGRAD)/np.linalg.norm(GRAD + NGRAD)
+            Grads[-i] = ( Delta + l*np.append(np.zeros((mw,1)), Ws[-i][:,1:], 1) )/m
 
-        return ( np.asscalar(cost), np.append(grad1.flatten(), grad2.flatten()) )
+        GRAD = np.concatenate( [g.flatten() for g in Grads] )
+
+        f = lambda x : self.cost(x, X,Y,l)
+        NGRAD = numGrad(f,theta)
+
+        print np.linalg.norm(GRAD - NGRAD)/np.linalg.norm(GRAD + NGRAD)
+
+        return ( np.asscalar(cost), GRAD )
 
     def trainNetwork(self, X, y, l):
         """Trains the neural network from the data X with labels y and regularizer l."""
@@ -235,18 +277,20 @@ def readin( path, DT = float ):
     return (X, y)
 
 
-if __name__ == "__main_":
+if __name__ == "__main__":
 
     import time
 
-    nn = NeuralNet(9, 9, 8)
+    np.random.seed(1)
+
+    nn = NeuralNet(9, 9,2,3,4,5)
 
     X, y = readin("p1.txt", int)
     X.astype(float)
 
     print
     t1 = time.time()
-    nn.trainNetwork(X, y, 0.0)
+    nn.trainNetwork(X, y, 0.1)
     t2 = time.time()
     print
     print "training time (s): ", t2 - t1

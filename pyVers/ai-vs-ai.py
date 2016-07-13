@@ -183,8 +183,8 @@ if __name__ == "__main__":
 
     initializeLearning()
 
-    t1 = threading.Thread( target = learnTicTacToe, args = (1, 20) )
-    t2 = threading.Thread( target = learnTicTacToe, args = (2, 20) )
+    t1 = threading.Thread( target = learnTicTacToe, args = (1, 2) )
+    t2 = threading.Thread( target = learnTicTacToe, args = (2, 2) )
 
     t1.start()
     t2.start()
