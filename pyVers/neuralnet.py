@@ -3,7 +3,6 @@ import numpy as np
 import scipy.io as sio
 from scipy.optimize import minimize
 
-#np.set_printoptions(threshold=np.inf)
 
 class NeuralNet(object):
 
@@ -84,50 +83,6 @@ class NeuralNet(object):
 
         return Y
 
-    def cost(self, theta, X, Y, l):
-#        m, n = X.shape
-#
-#        Ws = self.__unflatten(theta)
-#
-#        A1 = np.append( np.ones((m,1)), X, 1)
-#        Z2 = A1.dot(Ws[0].T)
-#        mz, nz = Z2.shape
-#        A2 = np.append( np.ones((mz,1)), sigmoid(Z2), 1)
-#        Z3 = A2.dot(Ws[1].T)
-#        A3 = sigmoid(Z3)
-#
-#        #compute cost:
-#        reg = l*np.sum( [ np.sum( w[:,1:]**2 ) for w in Ws ] )/(2.0 * m)
-#        cost = -np.sum( np.log(A3)*Y + np.log(1 - A3 + 1.0e-15)*(1 - Y))/m + reg
-#
-#        return cost
-        m, n = X.shape
-
-        Ws = self.__unflatten(theta)
-        Grads = [ np.zeros(w.shape) for w in Ws ]
-        As = [ np.append( np.ones((m,1)), X, 1) ]
-        Zs = []
-
-        for l in xrange(self.layers - 2):
-            #compute Z:
-            z = As[l].dot(Ws[l].T)
-            Zs.append(z)
-            
-            #Compute activation (A):
-            mz, nz = z.shape
-            a = np.append( np.ones((mz,1)), sigmoid(z), 1)
-            As.append(a)
-
-        #activation of output:
-        Zs.append( As[-1].dot(Ws[-1].T) )
-        As.append( sigmoid(Zs[-1]) )
-
-        #compute cost:
-        reg = l*np.sum( [ np.sum( w[:,1:]**2 ) for w in Ws ] )/(2.0 * m)
-        cost = -np.sum( np.log(As[-1])*Y + np.log(1 - As[-1] + 1.0e-15)*(1 - Y))/m + reg
-
-        return np.asscalar(cost)
-
     def __nnCost(self, theta, X, Y, l):
         """Computes the cost and its gradient for the neural network on data X, Y
            with regularizer l."""
@@ -171,15 +126,9 @@ class NeuralNet(object):
             Delta = d.T.dot(As[-i - 1])
 
             mw, _ = Ws[-i].shape
-
             Grads[-i] = ( Delta + l*np.append(np.zeros((mw,1)), Ws[-i][:,1:], 1) )/m
 
         GRAD = np.concatenate( [g.flatten() for g in Grads] )
-
-        f = lambda x : self.cost(x, X,Y,l)
-        NGRAD = numGrad(f,theta)
-
-        print np.linalg.norm(GRAD - NGRAD)/np.linalg.norm(GRAD + NGRAD)
 
         return ( np.asscalar(cost), GRAD )
 
@@ -246,26 +195,6 @@ def sigGrad(z):
     return s * (1 - s)
 
 
-def numGrad(f, x):
-    """Computes numerical gradient of f at x."""
-
-    numgrad = np.zeros(len(x))
-    perturb = np.zeros(len(x))
-    e = 1.0e-4
-
-    for p in xrange(len(x)):
-        perturb[p] = e
-
-        fp = f(x + perturb)
-        fm = f(x - perturb)
-
-        numgrad[p] = (fp - fm)/(2*e)
-
-        perturb[p] = 0.0
-
-    return numgrad
-
-
 def readin( path, DT = float ):
     
     data = np.loadtxt( path, delimiter = " ", dtype=DT)
@@ -275,72 +204,4 @@ def readin( path, DT = float ):
     y = data[:,9].reshape((m,1))
 
     return (X, y)
-
-
-if __name__ == "__main__":
-
-    import time
-
-    np.random.seed(1)
-
-    nn = NeuralNet(9, 9,2,3,4,5)
-
-    X, y = readin("p1.txt", int)
-    X.astype(float)
-
-    print
-    t1 = time.time()
-    nn.trainNetwork(X, y, 0.1)
-    t2 = time.time()
-    print
-    print "training time (s): ", t2 - t1
-    print
-
-    x1 = np.array([ [1, -1, 0,
-                     1, -1, 0,
-                     0, 0, 0] ])
-    x2 = np.array([ [0, 0, 1,
-                     0, 0, -1,
-                     1, 0, -1] ])
-    x3 = np.array([ [1, -1, 0,
-                     -1, 1, 0,
-                     0, 0, 0] ])
-    x4 = np.array([ [-1, 0, -1,
-                     0, 0, 0,
-                     1, 0, 1] ])
-    x5 = np.array([ [0, 0, 0,
-                     0, -1, -1,
-                     0, 1, 1] ])
-    x6 = np.array([ [0, 1, -1,
-                     0, 1, 0,
-                     0, 0, -1] ])
-    x7 = np.array([ [0, 0, 0,
-                     -1, 1, 0,
-                     1, 0, -1] ])
-    x8 = np.array([ [1, 0, -1,
-                     0, 0, -1,
-                     0, 0, 1] ])
-    x9 = np.array([ [0, 1, 1,
-                     0, 0, -1,
-                     -1, 0, 0] ])
-    x10 = np.array([ [0, 0, 1,
-                     0, -1, 0,
-                     0, -1, 1] ])
-
-    print "test 1:", nn.evaluate(x1), "6 (7)"
-    print "test 2:", nn.evaluate(x2), 4
-    print "test 3:", nn.evaluate(x3), 8
-    print "test 4:", nn.evaluate(x4), "7 (1)"
-    print "test 5:", nn.evaluate(x5), "6 (3)"
-    print "test 6:", nn.evaluate(x6), "7 (5)"
-    print "test 7:", nn.evaluate(x7), 2
-    print "test 8:", nn.evaluate(x7), 4
-    print "test 9:", nn.evaluate(x7), 0
-    print "test 10:", nn.evaluate(x7), "5 (1)"
-    print
-
-#    print nn.weights[0]
-#    print "\n"
-#    print nn.weights[1]
-#    print
 
