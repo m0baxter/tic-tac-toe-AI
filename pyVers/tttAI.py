@@ -43,8 +43,6 @@ class HumanPlayer(TicTacToeAI):
                     return sqr
 
 
-
-
 class NNAI(TicTacToeAI):
  
     def __init__(self, neuralnet):
