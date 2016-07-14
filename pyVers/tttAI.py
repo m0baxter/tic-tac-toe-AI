@@ -6,9 +6,9 @@ import neuralnet as nn
 
 
 class TicTacToeAI(object):
-    
+ 
     __metaclass__ = abc.ABCMeta
-    
+ 
     @abc.abstractmethod
     def takeTurn(self, board):
         """Takes one turn."""
@@ -16,29 +16,42 @@ class TicTacToeAI(object):
 
 
 class RandomAI(TicTacToeAI):
-    
+ 
     def takeTurn(self, board):
         """Randomly places a marker in a square."""
-        
+ 
         return rnd.randrange(0,9)
 
 
 class HumanPlayer(TicTacToeAI):
-    
+
+    def __init__(self, mrk):
+        self.mrk = mrk
+ 
     def takeTurn(self, board):
         """Takes one turn."""
 
-        #fill in later
-        pass
+        while (True):
+            try:
+                sqr = int( raw_input(self.mrk +"'s turn [0-8]: ") )
+                
+            except ValueError:
+                continue
+
+            else:
+                if ( 0 <= sqr and sqr < 9 and board.isBlank(sqr) ):
+                    return sqr
+
+
 
 
 class NNAI(TicTacToeAI):
-    
+ 
     def __init__(self, neuralnet):
         """Initializes an AI from a set of example moves."""
 
         self.neuralnet = neuralnet
-        
+ 
     def takeTurn(self, board):
         """Takes one turn."""
 
@@ -51,15 +64,10 @@ class NNAI(TicTacToeAI):
 
         else:
             rankedMvs = self.neuralnet.evaluate( np.array([brdList]) )
-
-#            print rankedMvs
-            
+ 
             for mv in rankedMvs:
-#                print board.isBlank(mv),
                 if ( board.isBlank(mv) ):
                     return mv
 
             raise RuntimeError("Could not make a move, the board was full.")
-
-
 
