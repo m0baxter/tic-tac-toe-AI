@@ -54,7 +54,7 @@ class NeuralNet(object):
         return weights
 
     def __unflatten(self, flat):
-        """used by the cost function to unflatten weight matrices."""
+        """Used by the cost function to unflatten weight matrices."""
 
         matrices = []
         start = 0
@@ -79,13 +79,12 @@ class NeuralNet(object):
         Y = np.zeros( (m, self.numLabels()) )
 
         for i in xrange(m):
-            Y[i,:] = np.eye(nl)[ y[i], : ] #% nl
+            Y[i,:] = np.eye(nl)[ y[i], : ]
 
         return Y
 
     def __nnCost(self, theta, X, Y, l):
-        """Computes the cost and its gradient for the neural network on data X, Y
-           with regularizer l."""
+        """Computes the cost and its gradient for the neural network on data X, Y with regularizer l."""
 
         m, n = X.shape
 
@@ -152,27 +151,15 @@ class NeuralNet(object):
         Zs = []
 
         for l in xrange(self.layers - 2):
-            #compute Z:
             z = As[l].dot(self.weights[l].T)
             Zs.append(z)
             
-            #Compute activation (A):
             mz, nz = z.shape
             a = np.append( np.ones((mz,1)), sigmoid(z), 1)
             As.append(a)
 
-        #activation of output:
         Zs.append( As[-1].dot(self.weights[-1].T) )
         As.append( sigmoid(Zs[-1]) )
-
-#        a1 = np.append( np.ones((1,1)), x, 1)
-#        z2 = a1.dot(self.weights[0].T)
-#        mz, nz = z2.shape
-#        a2 = np.append( np.ones((mz,1)), sigmoid(z2), 1)
-#        z3 = a2.dot(self.weights[1].T)
-#        a3 = sigmoid(z3)
-
-        #print a3
 
         return self.__indexDecending(As[-1])
     
@@ -210,15 +197,4 @@ def sigGrad(z):
 
     s = sigmoid(z)
     return s * (1 - s)
-
-
-def readin( path, DT = float ):
-    
-    data = np.loadtxt( path, delimiter = " ", dtype=DT)
-
-    X = data[:, 0:9]
-    m,n = X.shape
-    y = data[:,9].reshape((m,1))
-
-    return (X, y)
 
