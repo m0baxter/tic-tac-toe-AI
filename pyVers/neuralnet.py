@@ -179,6 +179,16 @@ class NeuralNet(object):
 
         return indices
 
+    def laplaceWeights(self, loc, scale):
+        """Sets the weights randomly drawing from a laplace distribution"""
+
+        for i in range( len(self.weights) ):
+
+            s = self.weights[i].shape
+            self.weights[i] = np.random.laplace(loc, scale, s)
+
+        return
+
 
 def randMatrix(size, eps):
     """Returns random matrix with shape = size whose values range in [-eps,eps]."""

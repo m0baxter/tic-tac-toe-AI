@@ -19,9 +19,13 @@ class RandomAI(TicTacToeAI):
  
     def takeTurn(self, board):
         """Randomly places a marker in a square."""
- 
-        return rnd.randrange(0,9)
 
+        while (True):
+            sqr = rnd.randrange(0,9)
+
+            if board.isBlank(sqr):
+                return sqr
+ 
 
 class HumanPlayer(TicTacToeAI):
 

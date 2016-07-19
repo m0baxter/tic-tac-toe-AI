@@ -9,6 +9,7 @@ import threading
 
 emptyBoard = "0 0 0 0 0 0 0 0 0 "
 nGames = None
+f = [1, 1, 1, 3, 3, 1]
 
 def takeTurn( mrk, brd, ai ):
    """Ask player mrk for square to place their marker."""
@@ -36,6 +37,9 @@ def playRound(p1AI, p2AI):
    p1Moves = ""
    p2Moves = ""
 
+   nMoves = 0
+
+
    while ( True ):
 
       #X moves:
@@ -47,21 +51,21 @@ def playRound(p1AI, p2AI):
          mv += "\n"
 
       p1Moves += mv
+      nMoves += 1
 
       #X wins:
       if ( brd.gameWon() ):
-         return (p1Moves, "", np.array([1,0,0]))
+         return ( f[nMoves] * p1Moves, "", np.array([1,0,0]))
 
       #cat's game:
       elif ( not brd.movesLeft() ):
          return (p1Moves, p2Moves, np.array([0,0,1]))
-         #return ("", "", np.array([0,0,1]))
 
       p2Moves += takeTurn("O", brd, p2AI) + "\n"
 
       #O wins:
       if ( brd.gameWon() ):
-         return ("", p2Moves, np.array([0,1,0]))
+         return ("", f[nMoves] * p2Moves, np.array([0,1,0]))
 
 
 def playGames( player1, player2, n ):
@@ -201,7 +205,7 @@ if __name__ == "__main__":
     l = 0.1
     inNodes = 9
     outNodes = 9
-    hiddenNodes = (16, 16, 16)
+    hiddenNodes = (10, 10)
 
     learnTicTacToe(maxItr, l, inNodes, outNodes, *hiddenNodes)
 

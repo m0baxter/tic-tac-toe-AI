@@ -7,11 +7,11 @@ import subprocess as sp
 
 class TicTacToe(object):
 
-    def __init__(self):
+    def __init__(self, path1, path2):
 
         #Hold neural net AIs for when they are needed:
-        self.xAI = ai.NNAI( nn.NeuralNet.fromFile("p1-1.mat") ) 
-        self.oAI = ai.NNAI( nn.NeuralNet.fromFile("p2-1.mat") ) 
+        self.xAI = ai.NNAI( nn.NeuralNet.fromFile( path1 ) ) 
+        self.oAI = ai.NNAI( nn.NeuralNet.fromFile( path2 ) ) 
         
         #Current game AIs:
         self.player1 = None
@@ -122,5 +122,5 @@ class TicTacToe(object):
 
 if __name__ == "__main__":
 
-   TicTacToe().runGame()
+   TicTacToe( "p1-1.mat", "p2-1.mat" ).runGame()
 
