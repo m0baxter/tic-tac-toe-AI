@@ -4,7 +4,6 @@ import tttAI as ai
 import board as brd
 import numpy as np
 import random as rnd
-
 import time
 
 
@@ -67,7 +66,7 @@ class Tournament(object):
         self.oPlayers = []
 
     def genPlayers( self, nPlayers ):
-        """Generates nPlayers X and O AI's. also adds nRandom random players."""
+        """Generates nPlayers X and O AI's."""
 
         for i in xrange(nPlayers):
 
@@ -118,32 +117,37 @@ class Tournament(object):
     def selectBreeders(self):
         """Selects the X- and O-players to enter the breeding pool."""
 
-        xPop = [ (p, p.fitness()) for p in self.xPlayers]
-        oPop = [ (p, p.fitness()) for p in self.oPlayers]
+        maxFitX , maxFitO = self.maxFitness()
 
-        fitX = np.sum( [ f for _, f in xPop ] )
-        fitO = np.sum( [ f for _, f in oPop ] )
+        xPop = [ (p, p.fitness()/maxFitX) for p in self.xPlayers]
+        oPop = [ (p, p.fitness()/maxFitO) for p in self.oPlayers]
 
-        xSelected = []
-        oSelected = []
+        xPop.sort(key = lambda a : a[1], reverse = True)
+        oPop.sort(key = lambda a : a[1], reverse = True)
+
+        xCandidates = []
+        oCandidates = []
 
         for i in xrange( len(xPop) ):
 
-            if ( rnd.random() <= xPop[i][1]/fitX ):
-                xSelected.append(xPop[i][0])
+            if ( rnd.random() <= xPop[i][1] ):
+                xCandidates.append(xPop[i][0])
                 
-            if ( rnd.random() <= oPop[i][1]/fitO ):
-                oSelected.append(oPop[i][0])
+            if ( rnd.random() <= oPop[i][1]  ):
+                oCandidates.append(oPop[i][0])
 
-        rnd.shuffle(xSelected)
-        rnd.shuffle(oSelected)
+        xSelected = [ xCandidates.pop(0) ]
+        oSelected = [ oCandidates.pop(0) ]
 
-        return ( xSelected[:self.breedPop], oSelected[:self.breedPop] )
+        rnd.shuffle(xCandidates)
+        rnd.shuffle(oCandidates)
+
+        return ( xSelected + xCandidates[:self.breedPop-1], oSelected + oCandidates[:self.breedPop-1] )
 
     def breed(self, stock):
         """Breeds a new generation of players."""
 
-        nextGen = stock
+        nextGen = []
 
         for p1 in stock:
             nn1 = p1.getAI().neuralnet
@@ -185,7 +189,7 @@ class Tournament(object):
 
                 nextGen += [ Player( ai.NNAI(nnC1) ), Player( ai.NNAI(nnC2) ) ]
 
-        return nextGen
+        return nextGen + stock
 
     def genNewPlayers(self):
 
@@ -196,6 +200,26 @@ class Tournament(object):
 
         self.xPlayers = nextGenX
         self.oPlayers = nextGenO
+
+        return
+
+    def saveBest(self):
+        """Saves the weights of the best X- and O-players to disk."""
+
+        xPop = [ (p, p.fitness()) for p in self.xPlayers]
+        oPop = [ (p, p.fitness()) for p in self.oPlayers]
+
+        xPop.sort( key = lambda a : a[1], reverse = True )
+        oPop.sort( key = lambda a : a[1], reverse = True )
+
+        bestX = xPop.pop(0)[0]
+        bestO = oPop.pop(0)[0]
+
+        nnX = bestX.getAI().neuralnet
+        nnO = bestO.getAI().neuralnet
+
+        nnX.toFile("p1-gen")
+        nnO.toFile("p2-gen")
 
         return
 
@@ -289,45 +313,43 @@ def playGames( player1, player2, n ):
 
 if __name__ == "__main__":
 
-    t = Tournament( 20, 0.5, 0.3)
-    t.genPlayers( 100 )
+    breedPop = 7 #105 in every generation after the first. (as close to 100 as I can get)
+    pCross = 0.5
+    pMut = 0.03
+    N0 = 105
+    numGames = 20
+    numGens = 120
+
+    t = Tournament( breedPop, pCross, pMut)
+    t.genPlayers( N0 )
 
     start = time.time()
 
-    for i in range(3):
+    for i in range(numGens):
 
         print
-        print i
+        print "Generation {0}".format(i)
         print
 
         t1 = time.time()
 
-        t.playTournament( 10 )
+        t.playTournament( numGames )
 
         print t.maxFitness()
+        
+        if ( i == numGens - 1):
+            t.saveBest()
 
         t.genNewPlayers()
 
-        t2 = time.time
+        t2 = time.time()
 
-        print t2 - t1
+        print "Length of generation (s): ", t2 - t1
 
     end = time.time()
 
-    print end -start
-
-#        print
-#        print "X:"
-#        print
-#        
-#        for p1 in t.xPlayers:
-#            print p1.getRecord(), p1.fitness()
-#            
-#        print
-#        print "O:"
-#        print
-#            
-#        for p2 in t.oPlayers:
-#            print p2.getRecord(), p2.fitness()
-
+    print
+    print
+    print "Total time (s): ", end - start
+    print
 
