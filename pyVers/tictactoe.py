@@ -122,5 +122,6 @@ class TicTacToe(object):
 
 if __name__ == "__main__":
 
-   TicTacToe( "p1-1.mat", "p2-1.mat" ).runGame()
+   #TicTacToe( "./genout/no-rand/p1-gen-118.mat", "./genout/no-rand/p2-gen-118.mat" ).runGame()
+   TicTacToe( "./genout/p1-gen-752.mat", "./genout/p2-gen-752.mat" ).runGame()
 

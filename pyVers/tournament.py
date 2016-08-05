@@ -20,19 +20,22 @@ class Player(object):
     def won(self):
         """Increases the number of wins by one."""
 
-        self.wins += 1
+        self.wins  += 1
+        self.games += 1
         return
 
     def lose(self):
         """Increases the number of loses by one."""
 
         self.loses += 1
+        self.games += 1
         return
 
     def tie(self):
         """Increases the number of ties by one"""
 
         self.ties += 1
+        self.games += 1
         return
 
     def getRecord(self):
@@ -48,10 +51,17 @@ class Player(object):
     def fitness(self):
         """calculates the fitness of the player."""
 
-        rec = self.getRecord()
-        nPlayed = sum( rec )
+        return ( 1 - float(self.loses) / self.games )
 
-        return ( 1 - float(rec[1]) / nPlayed )
+    def resetRecord(self):
+        """Resets the Player's record."""
+
+        self.loses = 0
+        self.ties  = 0
+        self.wins  = 0
+        self.games = 0
+
+        return
 
 
 class Tournament(object):
@@ -76,24 +86,23 @@ class Tournament(object):
             nnX.laplaceWeights(0.0, 1.0)
             nnO.laplaceWeights(0.0, 1.0)
 
-#            for w in nnX.weights:
-#                s = w.shape
-#                w += np.random.laplace(0, 1, s)
-
-#            for w in nnO.weights:
-#                s = w.shape
-#                w += np.random.laplace(0, 1, s)
+#            if (i != 0):
+#                for w in nnX.weights:
+#                    s = w.shape
+#                    w += np.random.laplace(0, 1, s)
+#                    
+#                for w in nnO.weights:
+#                    s = w.shape
+#                    w += np.random.laplace(0, 1, s)
 
             self.xPlayers.append( Player( ai.NNAI(nnX) ) )
             self.oPlayers.append( Player( ai.NNAI(nnO) ) )
 
         return
 
-    def playTournament( self, nGames ):
+    def playTournament( self, nGames , gen):
         """Each X-player plays each O-player and random player nGames times."""
 
-        rndPlayer = Player( ai.RandomAI() )
-        
         #play against other players:
         for p1 in self.xPlayers:
             for p2 in self.oPlayers:
@@ -101,8 +110,9 @@ class Tournament(object):
 
         #Play against randoms to see more boards:
         for i in xrange( len(self.xPlayers) ):
-            playGames( self.xPlayers[i], rndPlayer, nGames )
-            playGames( rndPlayer, self.xPlayers[i], nGames )
+            rndPlayer = Player( ai.RandomAI() )
+            playGames( self.xPlayers[i], rndPlayer, 1500 )
+            playGames( rndPlayer, self.oPlayers[i], 1500 )
 
         return
 
@@ -189,6 +199,10 @@ class Tournament(object):
 
                 nextGen += [ Player( ai.NNAI(nnC1) ), Player( ai.NNAI(nnC2) ) ]
 
+        #Reset records of surviving players:
+        for p in stock:
+            p.resetRecord()
+
         return nextGen + stock
 
     def genNewPlayers(self):
@@ -203,7 +217,7 @@ class Tournament(object):
 
         return
 
-    def saveBest(self):
+    def saveBest(self, gen):
         """Saves the weights of the best X- and O-players to disk."""
 
         xPop = [ (p, p.fitness()) for p in self.xPlayers]
@@ -218,8 +232,8 @@ class Tournament(object):
         nnX = bestX.getAI().neuralnet
         nnO = bestO.getAI().neuralnet
 
-        nnX.toFile("p1-gen")
-        nnO.toFile("p2-gen")
+        nnX.toFile( "./genout/p1-gen-{0}".format(gen) )
+        nnO.toFile( "./genout/p2-gen-{0}".format(gen) )
 
         return
 
@@ -317,8 +331,10 @@ if __name__ == "__main__":
     pCross = 0.5
     pMut = 0.03
     N0 = 105
-    numGames = 20
-    numGens = 120
+    numGames = 30
+    numGens = 1000
+
+    writefile = open("bests.txt", 'w', 1)
 
     t = Tournament( breedPop, pCross, pMut)
     t.genPlayers( N0 )
@@ -328,17 +344,16 @@ if __name__ == "__main__":
     for i in range(numGens):
 
         print
-        print "Generation {0}".format(i)
-        print
+        print "Generation {0}".format(i+1)
 
         t1 = time.time()
 
-        t.playTournament( numGames )
+        t.playTournament( numGames, i )
 
-        print t.maxFitness()
-        
-        if ( i == numGens - 1):
-            t.saveBest()
+        bestX, bestO = t.maxFitness()
+        writefile.write( "{0}  {1}\n".format(bestX, bestO) )
+
+        t.saveBest(i+1)
 
         t.genNewPlayers()
 
@@ -352,4 +367,6 @@ if __name__ == "__main__":
     print
     print "Total time (s): ", end - start
     print
+
+    writefile.close()
 
