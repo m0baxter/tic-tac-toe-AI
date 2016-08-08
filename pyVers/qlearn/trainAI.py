@@ -51,10 +51,13 @@ def trainAI(player, nGames, gamma, epsilon, batchSize, memSize):
     xData = []
     yData = []
     memLoc = 0
-    rndPlayer = ai.RandomAI()
+
+    xWins = 0
+    oWins = 0
     
     for age in range(nGames):
         
+        rndPlayer = ai.RandomAI()
         board = Board()
         gameNotOver = True
         nTurns = 0
@@ -101,13 +104,18 @@ def trainAI(player, nGames, gamma, epsilon, batchSize, memSize):
             nTurns += 1
             memLoc = (memLoc + 1) % memSize
 
+            if (reward == 10):
+                xWins += 1
+            elif (reward == -10):
+                oWins += 1
+
 #            print board.showBoard()
 
         #Decrease epsilon (lower randomness):
         if (epsilon > 0.1):
             epsilon -= (1.0/nGames)
 
-        print "Finished Game:", age + 1
+        print "Finished Game:", age + 1, "X wins:", xWins, "O wins:", oWins
 
     return
 
