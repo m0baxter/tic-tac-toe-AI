@@ -4,6 +4,7 @@ import tttAI as ai
 import numpy as np
 import random as rnd
 import time
+import atexit
 
 
 def getReward(state, marker):
@@ -124,15 +125,32 @@ def trainAI(player, nGames, gMax, epsilon, batchSize, memSize):
     return
 
 
+def saveOnExit(player, path):
+    """Function to execute on exit, saves player to file."""
+
+    player.toFile( path )
+
+    return
+
+
 if __name__ == "__main__":
 
-    player = ai.NNAI()
-    
-    nGames    = 30000
+    player = None
+    trainNew = True
+
+    nGames    = 90000
     gMax      = 0.9
     epsilon   = 1.0
-    batchSize = 750 #5000
-    memSize   = 10000 #45000
+    batchSize = 5000 #5000
+    memSize   = 15000 #45000
+    
+    #Register function to save on exit (or kill):
+    atexit.register( saveOnExit, player, "player.h5" )
+
+    if ( trainNew ):
+        player = ai.NNAI()
+    else:
+        player =  fromFile( "player.h5" )
 
     t1 = time.time()
     trainAI( player, nGames, gMax, epsilon, batchSize, memSize )
