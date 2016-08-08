@@ -59,12 +59,10 @@ class NNAI(TicTacToeAI):
 
         self.nn = Sequential()
         self.nn.add( Dense( 100, init='lecun_uniform', input_shape=(9,) ) )
-        #self.nn.add( Activation('relu') )
         self.nn.add( PReLU() )
         #self.nn.add(Dropout(0.2))
 
         self.nn.add(Dense(100, init='lecun_uniform'))
-        #self.nn.add(Activation('relu'))
         self.nn.add( PReLU() )
         #self.nn.add(Dropout(0.2))
 
