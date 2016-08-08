@@ -25,7 +25,7 @@ def minMax(vals, flag):
         raise ValueError("Improper minMax flag.")
 
 
-def updateQs(player, state, action, reward, newState):
+def updateQs(player, state, action, reward, newState, gamma):
     """Generates updated Q value for given state action pair."""
 
     y = player.getQs( np.array( state, ndmin = 2 ) )
@@ -42,7 +42,7 @@ def updateQs(player, state, action, reward, newState):
     return  y.reshape(9, )
 
 
-def trainAI(player, nGames, gamma, epsilon, batchSize, memSize):
+def trainAI(player, nGames, gMax, epsilon, batchSize, memSize):
     """Trains the AI (player) to play tic tac toe using Q-learning algorithm over nGames games, with
        discount gamma, replay memory size memSize and batch update size of batchSize."""
        
@@ -51,6 +51,8 @@ def trainAI(player, nGames, gamma, epsilon, batchSize, memSize):
     xData = []
     yData = []
     memLoc = 0
+
+    gamma = 0.0
 
     xWins = 0
     oWins = 0
@@ -81,7 +83,7 @@ def trainAI(player, nGames, gamma, epsilon, batchSize, memSize):
             newState = board.intList()
             reward = getReward( board, marker)
 
-            y =  updateQs( player, state, action, reward, newState )
+            y =  updateQs( player, state, action, reward, newState, gamma )
 
             if ( len(xData) < memSize ):
                 xData.append( state )
@@ -115,6 +117,8 @@ def trainAI(player, nGames, gamma, epsilon, batchSize, memSize):
         if (epsilon > 0.1):
             epsilon -= (1.0/nGames)
 
+        gamma = (gMax*age)/nGames
+
         print "Finished Game:", age + 1, "X wins:", xWins, "O wins:", oWins
 
     return
@@ -124,14 +128,14 @@ if __name__ == "__main__":
 
     player = ai.NNAI()
     
-    nGames    = 60000
-    gamma     = 0.75
+    nGames    = 30000
+    gMax      = 0.9
     epsilon   = 1.0
-    batchSize = 500 #5000
-    memSize   = 1000 #45000
+    batchSize = 750 #5000
+    memSize   = 10000 #45000
 
     t1 = time.time()
-    trainAI( player, nGames, gamma, epsilon, batchSize, memSize )
+    trainAI( player, nGames, gMax, epsilon, batchSize, memSize )
     t2 = time.time()
 
     print "\n\nTrained for {0} games in {1} seconds".format(nGames, t2 - t1)
