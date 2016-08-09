@@ -43,7 +43,7 @@ def updateQs(player, state, action, reward, newState, gamma):
     return  y.reshape(9, )
 
 
-def trainAI(player, nGames, gMax, epsilon, batchSize, memSize):
+def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
     """Trains the AI (player) to play tic tac toe using Q-learning algorithm over nGames games, with
        discount gamma, replay memory size memSize and batch update size of batchSize."""
        
@@ -118,7 +118,7 @@ def trainAI(player, nGames, gMax, epsilon, batchSize, memSize):
         if (epsilon > 0.1):
             epsilon -= (1.0/nGames)
 
-        gamma = (gMax*age)/nGames
+        gamma = ( (gMax - gMin) * age )/nGames + gMin
 
         print "Finished Game:", age + 1, "X wins:", xWins, "O wins:", oWins
 
@@ -138,11 +138,12 @@ if __name__ == "__main__":
     player = None
     trainNew = True
 
-    nGames    = 90000
+    nGames    = 300000
+    gMin      = 0.0
     gMax      = 0.9
     epsilon   = 1.0
-    batchSize = 5000 #5000
-    memSize   = 15000 #45000
+    batchSize = 25000 #5000
+    memSize   = 50000 #45000
     
     #Register function to save on exit (or kill):
     atexit.register( saveOnExit, player, "player.h5" )
@@ -153,7 +154,7 @@ if __name__ == "__main__":
         player =  fromFile( "player.h5" )
 
     t1 = time.time()
-    trainAI( player, nGames, gMax, epsilon, batchSize, memSize )
+    trainAI( player, nGames, gMin, gMax, epsilon, batchSize, memSize )
     t2 = time.time()
 
     print "\n\nTrained for {0} games in {1} seconds".format(nGames, t2 - t1)
