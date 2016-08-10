@@ -58,14 +58,18 @@ class NNAI(TicTacToeAI):
         """Initializes an AI from a set of example moves."""
 
         self.nn = Sequential()
+        
+        #Input and first hidden layer:
         self.nn.add( Dense( 100, init='lecun_uniform', input_shape=(9,) ) )
         self.nn.add( PReLU() )
         self.nn.add(Dropout(0.2))
-
+        
+        #Second hidden layer:
         self.nn.add(Dense(100, init='lecun_uniform'))
         self.nn.add( PReLU() )
         self.nn.add(Dropout(0.2))
-
+        
+        #Output layer:
         self.nn.add(Dense(9, init='lecun_uniform'))
         self.nn.add(Activation('linear'))
 

@@ -145,19 +145,17 @@ if __name__ == "__main__":
     batchSize = 25000 #5000
     memSize   = 50000 #45000
     
-    #Register function to save on exit (or kill):
-    atexit.register( saveOnExit, player, "player.h5" )
-
     if ( trainNew ):
         player = ai.NNAI()
     else:
-        player =  fromFile( "player.h5" )
+        player = fromFile( "player.h5" )
+
+    #Register function to save on exit (or kill):
+    atexit.register( saveOnExit, player, "player.h5" )
 
     t1 = time.time()
     trainAI( player, nGames, gMin, gMax, epsilon, batchSize, memSize )
     t2 = time.time()
 
     print "\n\nTrained for {0} games in {1} seconds".format(nGames, t2 - t1)
-
-    player.toFile( "player.h5" )
 
