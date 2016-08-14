@@ -46,9 +46,9 @@ def updateQs(player, state, action, reward, newState, gamma):
 def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
     """Trains the AI (player) to play tic tac toe using Q-learning algorithm over nGames games, with
        discount gamma, replay memory size memSize and batch update size of batchSize."""
-       
+ 
     emptyBoard = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
-    
+ 
     xData = []
     yData = []
     memLoc = 0
@@ -57,16 +57,14 @@ def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
 
     xWins = 0
     oWins = 0
-    
+ 
     for age in range(nGames):
-        
+ 
         rndPlayer = ai.RandomAI()
         board = Board()
         gameNotOver = True
         nTurns = 0
-
-#        print  board.showBoard()
-        
+ 
         while (gameNotOver):
 
             marker = (-1)**nTurns
@@ -112,8 +110,6 @@ def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
             elif (reward == -10):
                 oWins += 1
 
-#            print board.showBoard()
-
         #Decrease epsilon (lower randomness):
         if (epsilon > 0.1):
             epsilon -= (1.0/nGames)
@@ -138,24 +134,27 @@ if __name__ == "__main__":
     player = None
     trainNew = True
 
-    nGames    = 300000
+    nGames    = 75000
     gMin      = 0.0
-    gMax      = 0.9
+    gMax      = 0.5
     epsilon   = 1.0
-    batchSize = 25000 #5000
-    memSize   = 50000 #45000
-    
+    batchSize = 25000 #25000
+    memSize   = 50000 #50000
+ 
     if ( trainNew ):
         player = ai.NNAI()
     else:
-        player = fromFile( "player.h5" )
+        player = ai.NNAI().fromFile( "player.h5" )
+        gMin = gMax
 
     #Register function to save on exit (or kill):
-    atexit.register( saveOnExit, player, "player.h5" )
+    atexit.register( saveOnExit, player, "player-fail.h5" )
 
     t1 = time.time()
     trainAI( player, nGames, gMin, gMax, epsilon, batchSize, memSize )
     t2 = time.time()
 
     print "\n\nTrained for {0} games in {1} seconds".format(nGames, t2 - t1)
+
+    saveOnExit(player, "player.h5")
 

@@ -68,7 +68,12 @@ class NNAI(TicTacToeAI):
         self.nn.add(Dense(100, init='lecun_uniform'))
         self.nn.add( PReLU() )
         self.nn.add(Dropout(0.2))
-        
+
+        #Third hidden layer:
+        self.nn.add(Dense(100, init='lecun_uniform'))
+        self.nn.add( PReLU() )
+        self.nn.add(Dropout(0.2))
+
         #Output layer:
         self.nn.add(Dense(9, init='lecun_uniform'))
         self.nn.add(Activation('linear'))
