@@ -116,7 +116,8 @@ def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
 
         gamma = ( (gMax - gMin) * age )/nGames + gMin
 
-        print "Finished Game:", age + 1, "X wins:", xWins, "O wins:", oWins
+        print "Finished Game:", age + 1, "X wins:", xWins, "O wins:", oWins,
+              "Ties:", (age + 1) - (xWins + oWins)
 
     return
 
@@ -134,7 +135,7 @@ if __name__ == "__main__":
     player = None
     trainNew = True
 
-    nGames    = 75000
+    nGames    = 30000
     gMin      = 0.0
     gMax      = 0.5
     epsilon   = 1.0

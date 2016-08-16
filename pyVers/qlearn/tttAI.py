@@ -122,9 +122,9 @@ class NNAI(TicTacToeAI):
         else:
             rankedMvs = indexDecending( self.getQs( np.array( brdList, ndmin = 2 ) ) )
 
-            if ( brd.whoseTurn(brdList == -1) ):
+            if ( brd.whoseTurn(brdList) == -1 ):
                 rankedMvs.reverse()
- 
+
             for mv in rankedMvs:
                 if ( board.isBlank(mv) ):
                     return mv
