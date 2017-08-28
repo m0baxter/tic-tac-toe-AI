@@ -46,9 +46,9 @@ def updateQs(player, state, action, reward, newState, gamma):
 def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
     """Trains the AI (player) to play tic tac toe using Q-learning algorithm over nGames games, with
        discount gamma, replay memory size memSize and batch update size of batchSize."""
- 
+
     emptyBoard = [ 0, 0, 0, 0, 0, 0, 0, 0, 0 ]
- 
+
     xData = []
     yData = []
     memLoc = 0
@@ -57,21 +57,21 @@ def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
 
     xWins = 0
     oWins = 0
- 
+
     for age in range(nGames):
- 
+
         rndPlayer = ai.RandomAI()
         board = Board()
         gameNotOver = True
         nTurns = 0
- 
+
         while (gameNotOver):
 
             marker = (-1)**nTurns
             state = board.intList()
 
             #Determine which action to take:
-            if ( state == emptyBoard or rnd.random() < epsilon):
+            if ( state == emptyBoard or rnd.random() < epsilon ):
                 action = rndPlayer.takeTurn(board)
 
             else:
@@ -116,7 +116,9 @@ def trainAI(player, nGames, gMin, gMax, epsilon, batchSize, memSize):
 
         gamma = ( (gMax - gMin) * age )/nGames + gMin
 
-        print "Finished Game:", age + 1, "X wins:", xWins, "O wins:", oWins,
+        print "Finished Game:", age + 1, \
+              "X wins:", xWins, \
+              "O wins:", oWins, \
               "Ties:", (age + 1) - (xWins + oWins)
 
     return
@@ -135,13 +137,13 @@ if __name__ == "__main__":
     player = None
     trainNew = True
 
-    nGames    = 30000
+    nGames    = 500000
     gMin      = 0.0
     gMax      = 0.5
     epsilon   = 1.0
     batchSize = 25000 #25000
     memSize   = 50000 #50000
- 
+
     if ( trainNew ):
         player = ai.NNAI()
     else:

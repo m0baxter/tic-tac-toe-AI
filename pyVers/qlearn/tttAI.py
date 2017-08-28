@@ -10,9 +10,9 @@ from keras.optimizers import RMSprop
 
 
 class TicTacToeAI(object):
- 
+
     __metaclass__ = abc.ABCMeta
- 
+
     @abc.abstractmethod
     def takeTurn(self, board):
         """Takes one turn."""
@@ -20,7 +20,7 @@ class TicTacToeAI(object):
 
 
 class RandomAI(TicTacToeAI):
- 
+
     def takeTurn(self, board):
         """Randomly places a marker in a square."""
 
@@ -30,20 +30,20 @@ class RandomAI(TicTacToeAI):
         for sqr in moves:
             if board.isBlank(sqr):
                 return sqr
- 
+
 
 class HumanPlayer(TicTacToeAI):
 
     def __init__(self, mrk):
         self.mrk = mrk
- 
+
     def takeTurn(self, board):
         """Takes one turn."""
 
         while (True):
             try:
                 sqr = int( raw_input(self.mrk +"'s turn [0-8]: ") )
-                
+
             except ValueError:
                 continue
 
@@ -53,30 +53,30 @@ class HumanPlayer(TicTacToeAI):
 
 
 class NNAI(TicTacToeAI):
- 
+
     def __init__(self):
         """Initializes an AI from a set of example moves."""
 
         self.nn = Sequential()
-        
+
         #Input and first hidden layer:
-        self.nn.add( Dense( 100, init='lecun_uniform', input_shape=(9,) ) )
+        self.nn.add( Dense(50, init='lecun_uniform', input_shape=(9,) ) )
         self.nn.add( PReLU() )
-        self.nn.add(Dropout(0.2))
-        
+        self.nn.add( Dropout(0.2) )
+
         #Second hidden layer:
-        self.nn.add(Dense(100, init='lecun_uniform'))
+        self.nn.add( Dense(30, init='lecun_uniform') )
         self.nn.add( PReLU() )
-        self.nn.add(Dropout(0.2))
+        self.nn.add( Dropout(0.2) )
 
         #Third hidden layer:
-        self.nn.add(Dense(100, init='lecun_uniform'))
+        self.nn.add( Dense(20, init='lecun_uniform') )
         self.nn.add( PReLU() )
-        self.nn.add(Dropout(0.2))
+        self.nn.add( Dropout(0.2) )
 
         #Output layer:
-        self.nn.add(Dense(9, init='lecun_uniform'))
-        self.nn.add(Activation('linear'))
+        self.nn.add( Dense(9, init='lecun_uniform') )
+        self.nn.add( Activation('linear') )
 
         self.nn.compile( loss = 'mse', optimizer = RMSprop() )
 
@@ -96,17 +96,18 @@ class NNAI(TicTacToeAI):
 
         return
 
-    def trainAI(self, X, y):
+    def trainAI(self, X, y, batchSize, gradSteps, epoch = 0, verbose = 0):
         """Trains the neural network on the data X, Y."""
 
         m = len(X)
-        self.nn.fit( X, y, batch_size = m, nb_epoch = 1, verbose = 1 )
+        history = self.nn.fit( X, y, batch_size = batchSize, epochs = gradSteps,
+                                 initial_epoch = epoch, verbose = verbose )
 
-        return
+        return history
 
     def getQs(self, state):
         """Returns a numpy array of the Q(s,a) foar all possible actions a."""
-        
+
         return self.nn.predict( state, batch_size=1)
 
     def takeTurn(self, board):
@@ -133,11 +134,11 @@ class NNAI(TicTacToeAI):
 
 def indexDecending( arr ):
     """Given the output of getQs return a list of decreaseing q values."""
-    
+
     lst = list(arr[0])
-    
+
     indices = []
-    
+
     for i in xrange( len(lst) ):
         j = np.argmax(lst)
 
